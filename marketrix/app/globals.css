@@ -42,3 +42,23 @@ body {
   background: #d1d1d6;
   border-radius: 10px;
 }
+
+/* ===== Impressão / Exportar PDF ===== */
+.print-only {
+  display: none;
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+  body {
+    background: #ffffff;
+  }
+  @page {
+    margin: 14mm;
+  }
+}

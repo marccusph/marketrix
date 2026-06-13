@@ -19,7 +19,12 @@ function isValidSwot(s: unknown): s is SwotData {
 }
 
 export async function POST(req: NextRequest) {
-  let body: { swot?: unknown; company?: unknown; competitors?: unknown };
+  let body: {
+    swot?: unknown;
+    company?: unknown;
+    competitors?: unknown;
+    sources?: unknown;
+  };
   try {
     body = await req.json();
   } catch {
@@ -34,6 +39,13 @@ export async function POST(req: NextRequest) {
   const company = String(body?.company ?? "").trim();
   const competitors: string[] = Array.isArray(body?.competitors)
     ? (body.competitors as unknown[]).map((c) => String(c).trim()).filter(Boolean).slice(0, 3)
+    : [];
+
+  const sources: string[] = Array.isArray(body?.sources)
+    ? (body.sources as Array<Record<string, unknown>>)
+        .map((s) => (typeof s?.url === "string" ? s.url : ""))
+        .filter(Boolean)
+        .slice(0, 12)
     : [];
 
   let client;
@@ -61,6 +73,9 @@ OPORTUNIDADES:
 
 AMEAÇAS:
 - ${swot.threats.join("\n- ")}
+
+FONTES disponíveis (use estas URLs em evidenceSource quando uma delas sustentar o insight):
+- ${sources.length ? sources.join("\n- ") : "(nenhuma fornecida)"}
 
 Gere a matriz TOWS com 1 insight valioso por cruzamento.`;
 

@@ -7,6 +7,11 @@ import {
   Activity,
   ChevronRight,
   ArrowRightCircle,
+  Download,
+  Printer,
+  Rocket,
+  CalendarClock,
+  BadgeCheck,
 } from "lucide-react";
 import type { TowsData, CrossingInsight, Quadrant, Risk } from "@/lib/types";
 
@@ -14,6 +19,9 @@ interface TowsViewProps {
   company: string;
   data: TowsData;
   onReset: () => void;
+  onExportMd: () => void;
+  onPrint: () => void;
+  onLead: () => void;
 }
 
 const QUADRANT_META: Record<
@@ -33,6 +41,14 @@ const RISK_STYLES: Record<Risk, string> = {
 };
 
 const ORDER: Quadrant[] = ["SO", "WO", "ST", "WT"];
+
+function hostOf(url: string): string {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    return "fonte";
+  }
+}
 
 function ScoreBar({ label, value, colorClass }: { label: string; value: number; colorClass: string }) {
   return (
@@ -71,7 +87,7 @@ function InsightCard({ c }: { c: CrossingInsight }) {
       <h4 className="font-bold text-gray-900 text-lg leading-tight mb-3">{c.title}</h4>
       <p className="text-sm text-gray-600 mb-5 font-medium leading-relaxed flex-grow">{c.insight}</p>
 
-      <div className="bg-gray-50 rounded-2xl p-4 mb-5 space-y-2">
+      <div className="bg-gray-50 rounded-2xl p-4 mb-4 space-y-2">
         <div className="flex gap-2 text-xs">
           <span className="font-black text-gray-400 uppercase tracking-wider shrink-0">Interno:</span>
           <span className="text-gray-600 font-medium">{c.internalFactor}</span>
@@ -81,6 +97,30 @@ function InsightCard({ c }: { c: CrossingInsight }) {
           <span className="text-gray-600 font-medium">{c.externalFactor}</span>
         </div>
       </div>
+
+      {c.evidence && (
+        <div className="flex items-start gap-2 mb-5 bg-emerald-50/60 border border-emerald-100 rounded-2xl p-4">
+          <BadgeCheck className="w-4 h-4 text-emerald-500 mt-0.5 shrink-0" />
+          <div>
+            <span className="text-[9px] uppercase font-black text-emerald-500/80 tracking-widest block mb-0.5">
+              Evidência
+            </span>
+            <p className="text-xs text-gray-600 font-medium leading-relaxed">
+              {c.evidence}
+              {c.evidenceSource ? (
+                <a
+                  href={c.evidenceSource}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="ml-1.5 text-orange-500 font-bold hover:underline whitespace-nowrap"
+                >
+                  {hostOf(c.evidenceSource)} ↗
+                </a>
+              ) : null}
+            </p>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-2 gap-6 mb-5">
         <ScoreBar label="Impacto" value={c.impact} colorClass="bg-orange-500" />
@@ -100,10 +140,16 @@ function InsightCard({ c }: { c: CrossingInsight }) {
   );
 }
 
-export function TowsView({ company, data, onReset }: TowsViewProps) {
+export function TowsView({ company, data, onReset, onExportMd, onPrint, onLead }: TowsViewProps) {
   const crossings = [...data.crossings].sort(
     (a, b) => ORDER.indexOf(a.quadrant) - ORDER.indexOf(b.quadrant)
   );
+
+  const phases = [
+    { label: "Primeiros 30 dias", items: data.actionPlan?.days30 ?? [], accent: "text-emerald-500" },
+    { label: "31 – 60 dias", items: data.actionPlan?.days60 ?? [], accent: "text-blue-500" },
+    { label: "61 – 90 dias", items: data.actionPlan?.days90 ?? [], accent: "text-purple-500" },
+  ];
 
   return (
     <div className="animate-fade-in space-y-12 pb-20 max-w-6xl mx-auto">
@@ -117,12 +163,32 @@ export function TowsView({ company, data, onReset }: TowsViewProps) {
             cruzamento.
           </p>
         </div>
-        <button
-          onClick={onReset}
-          className="px-8 py-4 rounded-2xl bg-white text-gray-500 font-bold flex items-center gap-2 text-sm transition-all border border-gray-100 hover:text-orange-500 hover:shadow-md active:scale-95"
-        >
-          <RotateCcw className="w-4 h-4" /> Nova análise
-        </button>
+        <div className="flex flex-wrap gap-3 w-full md:w-auto">
+          <button
+            onClick={onExportMd}
+            className="px-5 py-3.5 rounded-2xl bg-white border border-gray-100 text-gray-500 hover:text-orange-500 font-bold text-sm flex items-center gap-2 transition-all hover:shadow-md active:scale-95"
+          >
+            <Download className="w-4 h-4" /> .md
+          </button>
+          <button
+            onClick={onPrint}
+            className="px-5 py-3.5 rounded-2xl bg-white border border-gray-100 text-gray-500 hover:text-orange-500 font-bold text-sm flex items-center gap-2 transition-all hover:shadow-md active:scale-95"
+          >
+            <Printer className="w-4 h-4" /> PDF
+          </button>
+          <button
+            onClick={onReset}
+            className="px-5 py-3.5 rounded-2xl bg-white border border-gray-100 text-gray-400 hover:text-gray-600 font-bold text-sm flex items-center gap-2 transition-all active:scale-95"
+          >
+            <RotateCcw className="w-4 h-4" /> Nova
+          </button>
+          <button
+            onClick={onLead}
+            className="px-6 py-3.5 rounded-2xl gradient-bg text-white font-bold text-sm flex items-center gap-2 shadow-xl shadow-orange-500/20 hover:scale-[1.02] active:scale-95 transition-all"
+          >
+            <Rocket className="w-4 h-4" /> Quero implementar
+          </button>
+        </div>
       </div>
 
       {/* Sumário executivo + priorização */}
@@ -235,6 +301,55 @@ export function TowsView({ company, data, onReset }: TowsViewProps) {
             <InsightCard key={`${c.quadrant}-${i}`} c={c} />
           ))}
         </div>
+      </div>
+
+      {/* Plano de ação 30 / 60 / 90 */}
+      {data.actionPlan && (
+        <div className="space-y-10">
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 rounded-2xl gradient-bg flex items-center justify-center shadow-lg shadow-orange-500/20">
+              <CalendarClock className="w-5 h-5 text-white" />
+            </div>
+            <h3 className="text-3xl font-black text-gray-900 tracking-tight">Plano de ação</h3>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {phases.map((ph, i) => (
+              <div key={i} className="ios-card p-6 ios-shadow flex flex-col">
+                <h4 className={`text-sm font-black uppercase tracking-widest mb-5 ${ph.accent}`}>
+                  {ph.label}
+                </h4>
+                <ul className="space-y-5 flex-grow">
+                  {ph.items.map((a, j) => (
+                    <li key={j} className="flex gap-3">
+                      <span className="w-1.5 h-1.5 rounded-full bg-orange-400 mt-2 shrink-0" />
+                      <div>
+                        <p className="text-sm font-bold text-gray-800 leading-snug">{a.action}</p>
+                        <p className="text-xs text-gray-400 font-medium mt-1">Métrica: {a.metric}</p>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* CTA final */}
+      <div className="ios-card p-8 md:p-10 flex flex-col md:flex-row items-center justify-between gap-6 border border-orange-100">
+        <div>
+          <h4 className="text-2xl font-black text-gray-900 mb-1">Gostou da estratégia?</h4>
+          <p className="text-gray-500 font-medium">
+            Receba esta análise e dê o próximo passo para colocá-la em prática.
+          </p>
+        </div>
+        <button
+          onClick={onLead}
+          className="px-8 py-5 rounded-2xl gradient-bg text-white font-bold text-lg flex items-center gap-3 shadow-xl shadow-orange-500/20 hover:scale-[1.02] active:scale-95 transition-all shrink-0"
+        >
+          <Rocket className="w-5 h-5" /> Quero implementar
+        </button>
       </div>
     </div>
   );

@@ -28,6 +28,8 @@ export interface CrossingInsight {
   insight: string;
   internalFactor: string; // a força/fraqueza específica usada
   externalFactor: string; // a oportunidade/ameaça específica usada
+  evidence: string; // o dado/fato concreto que sustenta o insight
+  evidenceSource?: string; // URL da fonte que embasa (quando houver)
   impact: number; // 1-5
   effort: number; // 1-5
   risk: Risk;
@@ -40,9 +42,21 @@ export interface ExecutiveSummary {
   direction: string;
 }
 
+export interface ActionItem {
+  action: string;
+  metric: string;
+}
+
+export interface ActionPlan {
+  days30: ActionItem[];
+  days60: ActionItem[];
+  days90: ActionItem[];
+}
+
 export interface TowsData {
   executiveSummary: ExecutiveSummary;
   crossings: CrossingInsight[]; // exatamente 4: SO, WO, ST, WT
+  actionPlan: ActionPlan;
   prioritization: {
     pursueNow: string[];
     watch: string[];
@@ -52,4 +66,14 @@ export interface TowsData {
 
 export interface StrategizeResponse {
   tows: TowsData;
+}
+
+export interface LeadPayload {
+  nome: string;
+  email: string;
+  telefone: string;
+  company: string;
+  swot: SwotData;
+  tows: TowsData | null;
+  sources?: Source[];
 }

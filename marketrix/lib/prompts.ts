@@ -31,6 +31,8 @@ Regras (inegociáveis):
 4. Avalie impact (1-5), effort (1-5) e risk (Baixo/Médio/Alto) com critério.
 5. No sumário executivo, destaque o insight central (coreInsight) e a direção estratégica (direction).
 6. Na priorização: liste os títulos a executar agora (pursueNow), os a observar (watch) e UM a evitar (avoid) com o motivo.
+7. Para CADA cruzamento, preencha "evidence" com o dado/fato concreto (com número quando houver) que sustenta o insight, e "evidenceSource" com a URL mais relevante da lista de FONTES fornecida (ou "" se nenhuma se aplicar). Não invente URLs — use apenas as fornecidas.
+8. Monte um "actionPlan" 30/60/90 dias: ações concretas e sequenciadas derivadas dos insights e dos seus primeiros passos, cada uma com uma métrica de sucesso mensurável.
 
 Escreva TODO o conteúdo em português do Brasil, com tom decisivo e profissional.
 Chame a ferramenta submit_tows com o resultado. Não responda em texto livre.`;
@@ -106,6 +108,14 @@ export const towsTool = {
             effort: { type: "integer", minimum: 1, maximum: 5 },
             risk: { type: "string", enum: ["Baixo", "Médio", "Alto"] },
             firstStep: { type: "string", description: "Primeiro passo concreto para começar a executar." },
+            evidence: {
+              type: "string",
+              description: "Dado ou fato concreto (com número quando houver) que sustenta este insight.",
+            },
+            evidenceSource: {
+              type: "string",
+              description: "URL da fonte mais relevante (escolhida da lista fornecida) que embasa o insight; ou string vazia.",
+            },
           },
           required: [
             "quadrant",
@@ -117,6 +127,7 @@ export const towsTool = {
             "effort",
             "risk",
             "firstStep",
+            "evidence",
           ],
         },
       },
@@ -144,7 +155,50 @@ export const towsTool = {
         },
         required: ["pursueNow", "watch", "avoid"],
       },
+      actionPlan: {
+        type: "object",
+        description: "Plano de ação 30/60/90 dias, com ações concretas e métrica de sucesso.",
+        properties: {
+          days30: {
+            type: "array",
+            description: "Ações para os primeiros 30 dias.",
+            items: {
+              type: "object",
+              properties: {
+                action: { type: "string", description: "Ação concreta a executar." },
+                metric: { type: "string", description: "Métrica de sucesso mensurável." },
+              },
+              required: ["action", "metric"],
+            },
+          },
+          days60: {
+            type: "array",
+            description: "Ações para 31 a 60 dias.",
+            items: {
+              type: "object",
+              properties: {
+                action: { type: "string", description: "Ação concreta a executar." },
+                metric: { type: "string", description: "Métrica de sucesso mensurável." },
+              },
+              required: ["action", "metric"],
+            },
+          },
+          days90: {
+            type: "array",
+            description: "Ações para 61 a 90 dias.",
+            items: {
+              type: "object",
+              properties: {
+                action: { type: "string", description: "Ação concreta a executar." },
+                metric: { type: "string", description: "Métrica de sucesso mensurável." },
+              },
+              required: ["action", "metric"],
+            },
+          },
+        },
+        required: ["days30", "days60", "days90"],
+      },
     },
-    required: ["executiveSummary", "crossings", "prioritization"],
+    required: ["executiveSummary", "crossings", "actionPlan", "prioritization"],
   },
 };
