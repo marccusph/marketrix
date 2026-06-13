@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getClient, MODEL, createMessage, extractToolInput } from "@/lib/anthropic";
+import { getClient, STRATEGIZE_MODEL, createMessage, extractToolInput } from "@/lib/anthropic";
 import { TOWS_SYSTEM, towsTool } from "@/lib/prompts";
 import type { SwotData, TowsData } from "@/lib/types";
 
@@ -81,7 +81,7 @@ Gere a matriz TOWS com 1 insight valioso por cruzamento.`;
 
   try {
     const resp = await createMessage(client, {
-      model: MODEL,
+      model: STRATEGIZE_MODEL,
       max_tokens: 4096,
       system: TOWS_SYSTEM,
       tools: [towsTool],

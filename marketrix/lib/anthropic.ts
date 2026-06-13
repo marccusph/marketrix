@@ -3,6 +3,13 @@ import Anthropic from "@anthropic-ai/sdk";
 // Modelo padrão (sobrescrevível por env). Mantido no servidor.
 export const MODEL = process.env.ANTHROPIC_MODEL || "claude-sonnet-4-6";
 
+// Modelo do passo de estratégia (TOWS). Usa um modelo mais rápido por padrão
+// para caber no limite de 60s de função do plano Hobby da Vercel, já que a
+// saída é grande (4 insights + evidências + plano 30/60/90). Em planos com
+// duração estendida (Pro/Enterprise), pode trocar por claude-sonnet-4-6.
+export const STRATEGIZE_MODEL =
+  process.env.ANTHROPIC_STRATEGIZE_MODEL || "claude-haiku-4-5-20251001";
+
 export function getClient(): Anthropic {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {

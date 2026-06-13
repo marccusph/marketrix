@@ -1,14 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import {
-  RotateCcw,
   TrendingUp,
   Zap,
   Activity,
   ChevronRight,
   ArrowRightCircle,
-  Download,
-  Printer,
   Rocket,
   CalendarClock,
   BadgeCheck,
@@ -18,20 +16,14 @@ import type { TowsData, CrossingInsight, Quadrant, Risk } from "@/lib/types";
 interface TowsViewProps {
   company: string;
   data: TowsData;
-  onReset: () => void;
-  onExportMd: () => void;
-  onPrint: () => void;
   onLead: () => void;
 }
 
-const QUADRANT_META: Record<
-  Quadrant,
-  { label: string; cross: string; tag: string; accent: string }
-> = {
-  SO: { label: "SO", cross: "Forças × Oportunidades", tag: "Maxi-Maxi · Capitalizar", accent: "bg-blue-500" },
-  WO: { label: "WO", cross: "Fraquezas × Oportunidades", tag: "Mini-Maxi · Melhorar", accent: "bg-orange-500" },
-  ST: { label: "ST", cross: "Forças × Ameaças", tag: "Maxi-Mini · Defender", accent: "bg-indigo-500" },
-  WT: { label: "WT", cross: "Fraquezas × Ameaças", tag: "Mini-Mini · Blindar", accent: "bg-red-500" },
+const QUADRANT_META: Record<Quadrant, { label: string; cross: string; accent: string }> = {
+  SO: { label: "SO", cross: "Forças × Oportunidades", accent: "bg-blue-500" },
+  WO: { label: "WO", cross: "Fraquezas × Oportunidades", accent: "bg-orange-500" },
+  ST: { label: "ST", cross: "Forças × Ameaças", accent: "bg-indigo-500" },
+  WT: { label: "WT", cross: "Fraquezas × Ameaças", accent: "bg-red-500" },
 };
 
 const RISK_STYLES: Record<Risk, string> = {
@@ -140,7 +132,9 @@ function InsightCard({ c }: { c: CrossingInsight }) {
   );
 }
 
-export function TowsView({ company, data, onReset, onExportMd, onPrint, onLead }: TowsViewProps) {
+export function TowsView({ data, onLead }: TowsViewProps) {
+  const [showPlan, setShowPlan] = useState(false);
+
   const crossings = [...data.crossings].sort(
     (a, b) => ORDER.indexOf(a.quadrant) - ORDER.indexOf(b.quadrant)
   );
@@ -152,42 +146,12 @@ export function TowsView({ company, data, onReset, onExportMd, onPrint, onLead }
   ];
 
   return (
-    <div className="animate-fade-in space-y-12 pb-20 max-w-6xl mx-auto">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+    <div className="animate-fade-in space-y-12 max-w-6xl mx-auto">
+      <div className="flex items-center gap-3 pt-4">
+        <Activity className="text-orange-500 w-7 h-7" />
         <div>
-          <h2 className="text-4xl font-black text-gray-900 tracking-tight mb-2 flex items-center gap-3">
-            <Activity className="text-orange-500 w-8 h-8" /> Roteiro estratégico
-          </h2>
-          <p className="text-gray-500 font-medium">
-            Matriz TOWS de <span className="font-bold text-gray-700">{company}</span> — 1 insight por
-            cruzamento.
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-3 w-full md:w-auto">
-          <button
-            onClick={onExportMd}
-            className="px-5 py-3.5 rounded-2xl bg-white border border-gray-100 text-gray-500 hover:text-orange-500 font-bold text-sm flex items-center gap-2 transition-all hover:shadow-md active:scale-95"
-          >
-            <Download className="w-4 h-4" /> .md
-          </button>
-          <button
-            onClick={onPrint}
-            className="px-5 py-3.5 rounded-2xl bg-white border border-gray-100 text-gray-500 hover:text-orange-500 font-bold text-sm flex items-center gap-2 transition-all hover:shadow-md active:scale-95"
-          >
-            <Printer className="w-4 h-4" /> PDF
-          </button>
-          <button
-            onClick={onReset}
-            className="px-5 py-3.5 rounded-2xl bg-white border border-gray-100 text-gray-400 hover:text-gray-600 font-bold text-sm flex items-center gap-2 transition-all active:scale-95"
-          >
-            <RotateCcw className="w-4 h-4" /> Nova
-          </button>
-          <button
-            onClick={onLead}
-            className="px-6 py-3.5 rounded-2xl gradient-bg text-white font-bold text-sm flex items-center gap-2 shadow-xl shadow-orange-500/20 hover:scale-[1.02] active:scale-95 transition-all"
-          >
-            <Rocket className="w-4 h-4" /> Quero implementar
-          </button>
+          <h2 className="text-3xl font-black text-gray-900 tracking-tight">Roteiro estratégico (TOWS)</h2>
+          <p className="text-gray-500 font-medium">1 insight de marketing por cruzamento.</p>
         </div>
       </div>
 
@@ -303,36 +267,59 @@ export function TowsView({ company, data, onReset, onExportMd, onPrint, onLead }
         </div>
       </div>
 
-      {/* Plano de ação 30 / 60 / 90 */}
+      {/* Plano de ação — atrás de um botão */}
       {data.actionPlan && (
-        <div className="space-y-10">
-          <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-2xl gradient-bg flex items-center justify-center shadow-lg shadow-orange-500/20">
-              <CalendarClock className="w-5 h-5 text-white" />
-            </div>
-            <h3 className="text-3xl font-black text-gray-900 tracking-tight">Plano de ação</h3>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {phases.map((ph, i) => (
-              <div key={i} className="ios-card p-6 ios-shadow flex flex-col">
-                <h4 className={`text-sm font-black uppercase tracking-widest mb-5 ${ph.accent}`}>
-                  {ph.label}
-                </h4>
-                <ul className="space-y-5 flex-grow">
-                  {ph.items.map((a, j) => (
-                    <li key={j} className="flex gap-3">
-                      <span className="w-1.5 h-1.5 rounded-full bg-orange-400 mt-2 shrink-0" />
-                      <div>
-                        <p className="text-sm font-bold text-gray-800 leading-snug">{a.action}</p>
-                        <p className="text-xs text-gray-400 font-medium mt-1">Métrica: {a.metric}</p>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
+        <div className="space-y-8">
+          {!showPlan ? (
+            <div className="ios-card p-8 md:p-10 flex flex-col md:flex-row items-center justify-between gap-6 border border-gray-100">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl gradient-bg flex items-center justify-center shadow-lg shadow-orange-500/30 shrink-0">
+                  <CalendarClock className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h4 className="text-xl font-black text-gray-900">Plano de ação 30 / 60 / 90 dias</h4>
+                  <p className="text-gray-500 font-medium text-sm">
+                    Transforme os insights num roteiro de execução de marketing.
+                  </p>
+                </div>
               </div>
-            ))}
-          </div>
+              <button
+                onClick={() => setShowPlan(true)}
+                className="px-8 py-4 rounded-2xl gradient-bg text-white font-bold flex items-center gap-2 shadow-xl shadow-orange-500/20 hover:scale-[1.02] active:scale-95 transition-all shrink-0"
+              >
+                <CalendarClock className="w-5 h-5" /> Gerar plano de ação
+              </button>
+            </div>
+          ) : (
+            <>
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-2xl gradient-bg flex items-center justify-center shadow-lg shadow-orange-500/20">
+                  <CalendarClock className="w-5 h-5 text-white" />
+                </div>
+                <h3 className="text-3xl font-black text-gray-900 tracking-tight">Plano de ação</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {phases.map((ph, i) => (
+                  <div key={i} className="ios-card p-6 ios-shadow flex flex-col">
+                    <h4 className={`text-sm font-black uppercase tracking-widest mb-5 ${ph.accent}`}>
+                      {ph.label}
+                    </h4>
+                    <ul className="space-y-5 flex-grow">
+                      {ph.items.map((a, j) => (
+                        <li key={j} className="flex gap-3">
+                          <span className="w-1.5 h-1.5 rounded-full bg-orange-400 mt-2 shrink-0" />
+                          <div>
+                            <p className="text-sm font-bold text-gray-800 leading-snug">{a.action}</p>
+                            <p className="text-xs text-gray-400 font-medium mt-1">Métrica: {a.metric}</p>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
         </div>
       )}
 

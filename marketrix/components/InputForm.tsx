@@ -6,9 +6,10 @@ import { Loader2, Globe, Users, ArrowRight } from "lucide-react";
 interface InputFormProps {
   onSubmit: (website: string, competitors: string[]) => void;
   isLoading: boolean;
+  loadingLabel?: string;
 }
 
-export function InputForm({ onSubmit, isLoading }: InputFormProps) {
+export function InputForm({ onSubmit, isLoading, loadingLabel = "Analisando o mercado…" }: InputFormProps) {
   const [website, setWebsite] = useState("");
   const [competitors, setCompetitors] = useState<string[]>(["", "", ""]);
 
@@ -117,7 +118,7 @@ export function InputForm({ onSubmit, isLoading }: InputFormProps) {
               {isLoading ? (
                 <>
                   <Loader2 className="animate-spin" />
-                  <span>Analisando o mercado…</span>
+                  <span>{loadingLabel}</span>
                 </>
               ) : (
                 <>

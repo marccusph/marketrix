@@ -1,24 +1,12 @@
 "use client";
 
-import {
-  ArrowRight,
-  Loader2,
-  CheckCircle2,
-  Target,
-  AlertTriangle,
-  Zap,
-  ShieldAlert,
-  Globe,
-} from "lucide-react";
+import { Target, AlertTriangle, Zap, ShieldAlert, Globe } from "lucide-react";
 import type { SwotData, Source } from "@/lib/types";
 
 interface SwotViewProps {
   company: string;
   data: SwotData;
   sources: Source[];
-  onConfirm: () => void;
-  onReset: () => void;
-  isLoading: boolean;
 }
 
 function SwotCard({
@@ -52,50 +40,18 @@ function SwotCard({
   );
 }
 
-export function SwotView({
-  company,
-  data,
-  sources,
-  onConfirm,
-  onReset,
-  isLoading,
-}: SwotViewProps) {
+export function SwotView({ company, data, sources }: SwotViewProps) {
   return (
     <div className="animate-fade-in max-w-6xl mx-auto">
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-10 gap-6">
-        <div>
-          <h2 className="text-4xl font-black text-gray-900 tracking-tight mb-2">Matriz SWOT</h2>
-          <p className="text-gray-500 font-medium">
-            Inteligência extraída de <span className="font-bold text-gray-700">{company}</span>.
-            Revise antes de cruzar.
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-4 w-full lg:w-auto">
-          <button
-            onClick={onReset}
-            disabled={isLoading}
-            className="px-8 py-4 rounded-2xl bg-white border border-gray-100 text-gray-400 hover:text-gray-600 font-bold transition-all text-sm shadow-sm disabled:opacity-50"
-          >
-            Recomeçar
-          </button>
-          <button
-            onClick={onConfirm}
-            disabled={isLoading}
-            className="px-8 py-4 rounded-2xl gradient-bg text-white font-bold shadow-xl shadow-orange-500/20 flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-70"
-          >
-            {isLoading ? (
-              <Loader2 className="animate-spin w-5 h-5" />
-            ) : (
-              <span className="flex items-center gap-2">
-                Gerar estratégias TOWS <ArrowRight className="w-5 h-5" />
-              </span>
-            )}
-          </button>
-        </div>
+      <div className="mb-8">
+        <h2 className="text-3xl font-black text-gray-900 tracking-tight mb-1">Matriz SWOT</h2>
+        <p className="text-gray-500 font-medium">
+          Diagnóstico de marketing de <span className="font-bold text-gray-700">{company}</span>.
+        </p>
       </div>
 
       {sources.length > 0 && (
-        <div className="mb-10 flex flex-wrap gap-2 items-center">
+        <div className="mb-8 flex flex-wrap gap-2 items-center">
           <span className="text-[10px] font-black text-gray-300 uppercase tracking-[0.2em] mr-2">
             Verificado via
           </span>
@@ -113,7 +69,7 @@ export function SwotView({
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <SwotCard
           title="Forças"
           items={data.strengths}
@@ -138,21 +94,6 @@ export function SwotView({
           gradient="bg-red-500"
           icon={<AlertTriangle className="w-4 h-4 text-white" />}
         />
-      </div>
-
-      <div className="ios-card p-8 flex items-center gap-6 border border-orange-100">
-        <div className="w-12 h-12 rounded-2xl gradient-bg flex items-center justify-center shadow-lg shadow-orange-500/30 shrink-0">
-          <CheckCircle2 className="w-6 h-6 text-white" />
-        </div>
-        <div>
-          <h4 className="font-black text-gray-900 text-sm tracking-wider uppercase mb-1">
-            Próximo passo: cruzamento TOWS
-          </h4>
-          <p className="text-gray-500 font-medium text-sm leading-relaxed max-w-2xl">
-            Vamos cruzar forças, fraquezas, oportunidades e ameaças para gerar 1 insight
-            estratégico valioso em cada um dos 4 quadrantes.
-          </p>
-        </div>
       </div>
     </div>
   );
