@@ -135,14 +135,26 @@ function InsightCard({ c }: { c: CrossingInsight }) {
 export function TowsView({ data, onLead }: TowsViewProps) {
   const [showPlan, setShowPlan] = useState(false);
 
-  const crossings = [...data.crossings].sort(
+  // Defensivo: nunca quebrar a UI se a TOWS vier parcial.
+  const exec = data.executiveSummary ?? { overview: "", coreInsight: "", direction: "" };
+  const prio = data.prioritization ?? {
+    pursueNow: [],
+    watch: [],
+    avoid: { title: "", reason: "" },
+  };
+  const pursueNow = prio.pursueNow ?? [];
+  const watch = prio.watch ?? [];
+  const avoid = prio.avoid ?? { title: "", reason: "" };
+
+  const crossings = [...(data.crossings ?? [])].sort(
     (a, b) => ORDER.indexOf(a.quadrant) - ORDER.indexOf(b.quadrant)
   );
 
+  const plan = data.actionPlan;
   const phases = [
-    { label: "Primeiros 30 dias", items: data.actionPlan?.days30 ?? [], accent: "text-emerald-500" },
-    { label: "31 – 60 dias", items: data.actionPlan?.days60 ?? [], accent: "text-blue-500" },
-    { label: "61 – 90 dias", items: data.actionPlan?.days90 ?? [], accent: "text-purple-500" },
+    { label: "Primeiros 30 dias", items: plan?.days30 ?? [], accent: "text-emerald-500" },
+    { label: "31 – 60 dias", items: plan?.days60 ?? [], accent: "text-blue-500" },
+    { label: "61 – 90 dias", items: plan?.days90 ?? [], accent: "text-purple-500" },
   ];
 
   return (
@@ -166,7 +178,7 @@ export function TowsView({ data, onLead }: TowsViewProps) {
               Sumário executivo
             </h3>
             <p className="text-2xl text-gray-900 font-bold leading-snug mb-10">
-              {data.executiveSummary.overview}
+              {exec.overview}
             </p>
             <div className="grid md:grid-cols-2 gap-12 pt-8 border-t border-gray-50">
               <div className="space-y-3">
@@ -174,7 +186,7 @@ export function TowsView({ data, onLead }: TowsViewProps) {
                   Insight central
                 </h4>
                 <p className="text-gray-600 font-bold leading-relaxed italic text-lg">
-                  “{data.executiveSummary.coreInsight}”
+                  “{exec.coreInsight}”
                 </p>
               </div>
               <div className="space-y-3">
@@ -182,7 +194,7 @@ export function TowsView({ data, onLead }: TowsViewProps) {
                   Direção estratégica
                 </h4>
                 <p className="text-3xl font-black text-transparent bg-clip-text gradient-bg">
-                  {data.executiveSummary.direction}
+                  {exec.direction}
                 </p>
               </div>
             </div>
@@ -201,7 +213,7 @@ export function TowsView({ data, onLead }: TowsViewProps) {
                   Executar agora
                 </div>
                 <div className="space-y-3">
-                  {data.prioritization.pursueNow.map((title, i) => (
+                  {pursueNow.map((title, i) => (
                     <div key={i} className="flex items-center gap-4 bg-gray-50 p-4 rounded-2xl">
                       <span className="w-6 h-6 rounded-full gradient-bg text-white text-[10px] font-black flex items-center justify-center shrink-0">
                         {i + 1}
@@ -212,13 +224,13 @@ export function TowsView({ data, onLead }: TowsViewProps) {
                 </div>
               </div>
 
-              {data.prioritization.watch.length > 0 && (
+              {watch.length > 0 && (
                 <div className="space-y-4">
                   <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
                     Observar
                   </div>
                   <div className="space-y-3">
-                    {data.prioritization.watch.map((title, i) => (
+                    {watch.map((title, i) => (
                       <div
                         key={i}
                         className="flex items-center gap-4 bg-white border border-gray-50 p-4 rounded-2xl"
@@ -239,10 +251,10 @@ export function TowsView({ data, onLead }: TowsViewProps) {
                 </div>
                 <div className="bg-red-50 p-5 rounded-2xl border border-red-100">
                   <div className="text-sm font-black text-red-600 mb-2 uppercase tracking-wide">
-                    {data.prioritization.avoid.title}
+                    {avoid.title}
                   </div>
                   <p className="text-xs text-red-400 font-medium leading-relaxed">
-                    {data.prioritization.avoid.reason}
+                    {avoid.reason}
                   </p>
                 </div>
               </div>
@@ -268,7 +280,7 @@ export function TowsView({ data, onLead }: TowsViewProps) {
       </div>
 
       {/* Plano de ação — atrás de um botão */}
-      {data.actionPlan && (
+      {plan && (
         <div className="space-y-8">
           {!showPlan ? (
             <div className="ios-card p-8 md:p-10 flex flex-col md:flex-row items-center justify-between gap-6 border border-gray-100">

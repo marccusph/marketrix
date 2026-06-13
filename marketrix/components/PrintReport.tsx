@@ -66,17 +66,17 @@ export function PrintReport({ company, swot, sources, tows }: PrintReportProps) 
             <h3 style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", letterSpacing: 1, color: "#ff6b3d", margin: "0 0 6px" }}>
               Sumário executivo
             </h3>
-            <p style={{ fontSize: 13, lineHeight: 1.5, margin: "0 0 8px" }}>{tows.executiveSummary.overview}</p>
+            <p style={{ fontSize: 13, lineHeight: 1.5, margin: "0 0 8px" }}>{tows.executiveSummary?.overview}</p>
             <p style={{ fontSize: 12.5, fontStyle: "italic", margin: "0 0 4px" }}>
-              <strong>Insight central:</strong> “{tows.executiveSummary.coreInsight}”
+              <strong>Insight central:</strong> “{tows.executiveSummary?.coreInsight}”
             </p>
             <p style={{ fontSize: 12.5, margin: 0 }}>
-              <strong>Direção:</strong> {tows.executiveSummary.direction}
+              <strong>Direção:</strong> {tows.executiveSummary?.direction}
             </p>
           </div>
 
           <h3 style={{ fontSize: 14, fontWeight: 800, margin: "0 0 8px" }}>Os 4 cruzamentos</h3>
-          {[...tows.crossings]
+          {[...(tows.crossings ?? [])]
             .sort((a, b) => ORDER.indexOf(a.quadrant) - ORDER.indexOf(b.quadrant))
             .map((c, i) => (
               <div key={i} style={{ borderLeft: "3px solid #ff6b3d", paddingLeft: 10, marginBottom: 14, pageBreakInside: "avoid" }}>
@@ -122,15 +122,15 @@ export function PrintReport({ company, swot, sources, tows }: PrintReportProps) 
 
           <div style={{ marginTop: 12, fontSize: 11.5 }}>
             <p style={{ margin: "0 0 3px" }}>
-              <strong>Executar agora:</strong> {tows.prioritization.pursueNow.join("; ")}
+              <strong>Executar agora:</strong> {(tows.prioritization?.pursueNow ?? []).join("; ")}
             </p>
-            {tows.prioritization.watch?.length > 0 && (
+            {(tows.prioritization?.watch?.length ?? 0) > 0 && (
               <p style={{ margin: "0 0 3px" }}>
-                <strong>Observar:</strong> {tows.prioritization.watch.join("; ")}
+                <strong>Observar:</strong> {(tows.prioritization?.watch ?? []).join("; ")}
               </p>
             )}
             <p style={{ margin: 0 }}>
-              <strong>Evitar:</strong> {tows.prioritization.avoid.title} — {tows.prioritization.avoid.reason}
+              <strong>Evitar:</strong> {tows.prioritization?.avoid?.title} — {tows.prioritization?.avoid?.reason}
             </p>
           </div>
         </div>

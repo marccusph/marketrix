@@ -18,6 +18,74 @@ function isValidSwot(s: unknown): s is SwotData {
   );
 }
 
+// --- Normalização defensiva da saída do modelo (evita crash no cliente) ---
+function asArray(x: unknown): unknown[] {
+  return Array.isArray(x) ? x : [];
+}
+function str(x: unknown): string {
+  return typeof x === "string" ? x : x == null ? "" : String(x);
+}
+function planItems(x: unknown): { action: string; metric: string }[] {
+  return asArray(x)
+    .map((i) => {
+      const o = (i ?? {}) as Record<string, unknown>;
+      return { action: str(o.action), metric: str(o.metric) };
+    })
+    .filter((i) => i.action);
+}
+function clamp(n: unknown): number {
+  const v = Number(n);
+  if (!Number.isFinite(v)) return 3;
+  return Math.max(1, Math.min(5, Math.round(v)));
+}
+function normalizeTows(raw: unknown): TowsData {
+  const t = (raw ?? {}) as Record<string, unknown>;
+  const es = (t.executiveSummary ?? {}) as Record<string, unknown>;
+  const pr = (t.prioritization ?? {}) as Record<string, unknown>;
+  const av = (pr.avoid ?? {}) as Record<string, unknown>;
+  const ap = (t.actionPlan ?? {}) as Record<string, unknown>;
+  const RISKS = ["Baixo", "Médio", "Alto"];
+  const QUADS = ["SO", "WO", "ST", "WT"];
+
+  const crossings = asArray(t.crossings).map((c) => {
+    const o = (c ?? {}) as Record<string, unknown>;
+    const q = str(o.quadrant).toUpperCase();
+    const r = str(o.risk);
+    return {
+      quadrant: (QUADS.includes(q) ? q : "SO") as TowsData["crossings"][number]["quadrant"],
+      title: str(o.title),
+      insight: str(o.insight),
+      internalFactor: str(o.internalFactor),
+      externalFactor: str(o.externalFactor),
+      evidence: str(o.evidence),
+      evidenceSource: typeof o.evidenceSource === "string" ? o.evidenceSource : "",
+      impact: clamp(o.impact),
+      effort: clamp(o.effort),
+      risk: (RISKS.includes(r) ? r : "Médio") as TowsData["crossings"][number]["risk"],
+      firstStep: str(o.firstStep),
+    };
+  });
+
+  return {
+    executiveSummary: {
+      overview: str(es.overview),
+      coreInsight: str(es.coreInsight),
+      direction: str(es.direction),
+    },
+    crossings,
+    actionPlan: {
+      days30: planItems(ap.days30),
+      days60: planItems(ap.days60),
+      days90: planItems(ap.days90),
+    },
+    prioritization: {
+      pursueNow: asArray(pr.pursueNow).map(str).filter(Boolean),
+      watch: asArray(pr.watch).map(str).filter(Boolean),
+      avoid: { title: str(av.title), reason: str(av.reason) },
+    },
+  };
+}
+
 export async function POST(req: NextRequest) {
   let body: {
     swot?: unknown;
