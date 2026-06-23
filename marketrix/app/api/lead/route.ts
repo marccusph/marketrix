@@ -64,6 +64,9 @@ export async function POST(req: NextRequest) {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
     // Sem provedor de email configurado: não perde o lead (está nos logs), mas avisa.
+    console.warn(
+      "[lead] RESEND_API_KEY ausente — email NÃO enviado. Configure a variável no Vercel."
+    );
     return NextResponse.json({
       ok: true,
       emailed: false,
@@ -92,7 +95,7 @@ ${analysisMd}
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "Marketrix <onboarding@resend.dev>",
+        from: process.env.LEAD_FROM || "Marketrix <onboarding@resend.dev>",
         to: [leadEmail],
         reply_to: email,
         subject: `Novo lead Marketrix: ${nome}${company ? ` — ${company}` : ""}`,
@@ -111,6 +114,7 @@ ${analysisMd}
       });
     }
 
+    console.log("[lead] email enviado com sucesso para", leadEmail);
     return NextResponse.json({ ok: true, emailed: true });
   } catch (e) {
     console.error("[lead] erro:", e);
